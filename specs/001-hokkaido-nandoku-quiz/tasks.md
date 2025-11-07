@@ -6,15 +6,15 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 `pyproject.toml`ファイルを作成し、`requests`ライブラリを依存関係として追加します。
-- [ ] T002 `.gitignore`ファイルを更新し、Pythonの一般的な除外設定（例: `__pycache__/`, `*.pyc`, `.venv/`）を追加します。
-- [ ] T003 `main.py`ファイルを作成し、基本的なLambdaハンドラ関数を設置します。
-- [ ] T004 `templates/`ディレクトリを作成し、SPAのメインページとなる`index.html`ファイルを追加します。
-- [ ] T005 `terraform/`ディレクトリを作成し、Lambda関数とFunction URLを定義する基本的なTerraform設定（`main.tf`, `variables.tf`, `outputs.tf`）を初期化します。
+- [X] T001 `pyproject.toml`ファイルを作成し、`requests`ライブラリを依存関係として追加します。
+- [X] T002 `.gitignore`ファイルを更新し、Pythonの一般的な除外設定（例: `__pycache__/`, `*.pyc`, `.venv/`）を追加します。
+- [X] T003 `main.py`ファイルを作成し、基本的なLambdaハンドラ関数を設置します。
+- [X] T004 `templates/`ディレクトリを作成し、SPAのメインページとなる`index.html`ファイルを追加します。
+- [X] T005 `terraform/`ディレクトリを作成し、Lambda関数とFunction URLを定義する基本的なTerraform設定（`main.tf`, `variables.tf`, `outputs.tf`）を初期化します。
 
 ## Phase 2: Foundational Tasks
 
-- [ ] T006 `main.py`で、環境変数`NANDOKU_API_ENDPOINT`を読み込み、設定されていない場合はエラーを発生させるロジックを実装します。
+- [X] T006 `main.py`で、環境変数`NANDOKU_API_ENDPOINT`を読み込み、設定されていない場合はエラーを発生させるロジックを実装します。
 - [ ] T007 `main.py`に、バックエンドAPIからクイズデータを取得するための関数（例: `get_quiz_data()`）を実装します。
 
 ## Phase 3: User Story 1 - クイズをプレイする
