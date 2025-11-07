@@ -4,6 +4,7 @@ import requests
 import random
 from string import Template
 from urllib.parse import parse_qs
+import base64
 
 def get_quiz_data(api_endpoint):
     try:
@@ -47,7 +48,12 @@ def lambda_handler(event, context):
         return {'statusCode': 200, 'headers': {'Content-Type': 'text/html'}, 'body': html_content}
 
     elif method == 'POST':
-        body = parse_qs(event['body'])
+        # print(event) # デバッグ用にeventの内容を出力
+        body_content = event['body']
+        if event.get('isBase64Encoded', False):
+            body_content = base64.b64decode(body_content).decode('utf-8')
+
+        body = parse_qs(body_content)
         user_answer = body.get('answer', [None])[0]
         quiz_id = body.get('quiz_id', [None])[0]
         correct_answer_from_client = body.get('correct_answer', [None])[0]
