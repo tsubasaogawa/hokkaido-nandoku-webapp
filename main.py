@@ -38,7 +38,7 @@ def lambda_handler(event, context):
 
         # In a real app, you'd fetch the specific quiz by ID to get the correct answer.
         # Here, we'll re-fetch a random one and assume it's the same for simplicity.
-        quiz_data = get_quiz_data(f"{api_endpoint}/{quiz_id}")
+        quiz_data = get_quiz_data(api_endpoint) # quiz_id を付加しないように修正
         if not quiz_data:
             return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to verify answer'})}
 
