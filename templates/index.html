@@ -27,6 +27,7 @@
                     <h2>${quiz.name}</h2>
                     <form id="quiz-form">
                         <input type="hidden" name="quiz_id" value="${quiz.id}">
+                        <input type="hidden" name="correct_answer" value="${quiz.correct_answer}">
                 `;
                 quiz.options.forEach(option => {
                     formHtml += `

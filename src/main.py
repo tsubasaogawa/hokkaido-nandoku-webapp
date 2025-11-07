@@ -18,7 +18,7 @@ def get_quiz_data(api_endpoint):
 
         return {
             "quiz": {
-                "id": api_data['name'], # IDとして地名を使用
+                "id": api_data['name'],
                 "name": api_data['name'],
                 "options": options,
                 "correct_answer": correct_answer
@@ -49,19 +49,15 @@ def lambda_handler(event, context):
     elif method == 'POST':
         body = parse_qs(event['body'])
         user_answer = body.get('answer', [None])[0]
-        quiz_id = body.get('quiz_id', [None])[0] # quiz_idは地名
+        quiz_id = body.get('quiz_id', [None])[0]
+        correct_answer_from_client = body.get('correct_answer', [None])[0]
 
-        # POSTリクエストではAPIを再度叩かず、正しい答えをどこかから取得する必要がある
-        # ここでは簡単のため、再度APIを叩いて答えを取得する（非効率）
-        quiz_data = get_quiz_data(api_endpoint)
-        if not quiz_data:
-            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to verify answer or invalid format'})}
+        if not quiz_id or not user_answer or not correct_answer_from_client:
+            return {'statusCode': 400, 'body': json.dumps({'error': 'Missing quiz_id, answer, or correct_answer'})}
 
-        correct_answer = quiz_data['quiz']['correct_answer']
-        
-        if user_answer == correct_answer:
+        if user_answer == correct_answer_from_client:
             return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'correct'})}
         else:
-            return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'incorrect', 'correct_answer': correct_answer})}
+            return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'incorrect', 'correct_answer': correct_answer_from_client})}
 
     return {'statusCode': 405, 'body': json.dumps({'error': 'Method Not Allowed'})}
