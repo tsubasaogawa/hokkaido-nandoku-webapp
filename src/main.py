@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         if not quiz_data:
             return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to fetch quiz data'})}
 
-        with open('templates/index.html', 'r', encoding='utf-8') as f:
+        with open('../templates/index.html', 'r', encoding='utf-8') as f:
             template = Template(f.read())
         
         html_content = template.substitute(quiz_data=json.dumps(quiz_data))
@@ -36,15 +36,12 @@ def lambda_handler(event, context):
         user_answer = body.get('answer', [None])[0]
         quiz_id = body.get('quiz_id', [None])[0]
 
-        body = parse_qs(event['body'])
-        user_answer = body.get('answer', [None])[0]
-        quiz_id = body.get('quiz_id', [None])[0]
-
         quiz_data = get_quiz_data(api_endpoint)
-        if not quiz_data or 'quiz' not in quiz_data:
+        if not quiz_data:
             return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to verify answer or invalid format'})}
 
-        correct_answer = quiz_data['quiz']['correct_answer']
+        # Assuming quiz_data is directly the quiz object, not {'quiz': {...}}
+        correct_answer = quiz_data['correct_answer']
         
         if user_answer == correct_answer:
             return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'correct'})}

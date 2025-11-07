@@ -13,7 +13,7 @@ provider "aws" {
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_file = "${path.module}/../main.py"
+  source_dir  = "${path.module}/../src"
   output_path = "${path.module}/../main.zip"
 }
 
