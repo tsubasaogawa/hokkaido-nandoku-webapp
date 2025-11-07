@@ -47,18 +47,25 @@
             async function handleFormSubmit(event) {
                 event.preventDefault();
                 const formData = new FormData(event.target);
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    body: new URLSearchParams(formData)
-                });
-                const data = await response.json();
-                
-                if (data.result === 'correct') {
-                    resultContainer.innerHTML = '<p style="color: green;">正解！</p>';
-                } else {
-                    resultContainer.innerHTML = `<p style="color: red;">不正解！正解は「${data.correct_answer}」です。</p>`;
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        body: new URLSearchParams(formData)
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    if (data.result === 'correct') {
+                        resultContainer.innerHTML = '<p style="color: green;">正解！</p>';
+                    } else {
+                        resultContainer.innerHTML = `<p style="color: red;">不正解！正解は「${data.correct_answer}」です。</p>`;
+                    }
+                    nextButton.style.display = 'block';
+                } catch (error) {
+                    resultContainer.innerHTML = `<p style="color: red;">エラーが発生しました: ${error.message}</p>`;
                 }
-                nextButton.style.display = 'block';
             }
 
             nextButton.addEventListener('click', () => {

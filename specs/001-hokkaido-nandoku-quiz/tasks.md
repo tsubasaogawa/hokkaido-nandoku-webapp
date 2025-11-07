@@ -32,9 +32,9 @@
 
 ## Phase 4: Polish & Cross-Cutting Concerns
 
-- [ ] T015 APIリクエストが失敗した場合のエラーハンドリングを`main.py`に実装し、JSON形式でエラーメッセージを返すようにします。また、フロントエンドのJavaScriptでそのエラーをハンドリングし、ユーザーにエラーメッセージを表示します。
-- [ ] T016 `README.md`ファイルを更新し、アプリケーションのセットアップ、デプロイ、および使用方法に関する詳細な手順を記載します。
-- [ ] T017 Terraformの`main.tf`を更新し、`NANDOKU_API_ENDPOINT`環境変数をLambda関数に渡す設定を追加します。
+- [X] T015 APIリクエストが失敗した場合のエラーハンドリングを`main.py`に実装し、JSON形式でエラーメッセージを返すようにします。また、フロントエンドのJavaScriptでそのエラーをハンドリングし、ユーザーにエラーメッセージを表示します。
+- [X] T016 `README.md`ファイルを更新し、アプリケーションのセットアップ、デプロイ、および使用方法に関する詳細な手順を記載します。
+- [X] T017 Terraformの`main.tf`を更新し、`NANDOKU_API_ENDPOINT`環境変数をLambda関数に渡す設定を追加します。
 
 ## Dependencies
 
