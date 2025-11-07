@@ -15,7 +15,7 @@
 ## Phase 2: Foundational Tasks
 
 - [X] T006 `main.py`で、環境変数`NANDOKU_API_ENDPOINT`を読み込み、設定されていない場合はエラーを発生させるロジックを実装します。
-- [ ] T007 `main.py`に、バックエンドAPIからクイズデータを取得するための関数（例: `get_quiz_data()`）を実装します。
+- [X] T007 `main.py`に、バックエンドAPIからクイズデータを取得するための関数（例: `get_quiz_data()`）を実装します。
 
 ## Phase 3: User Story 1 - クイズをプレイする
 
