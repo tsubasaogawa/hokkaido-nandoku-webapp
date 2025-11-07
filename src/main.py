@@ -5,13 +5,21 @@ from string import Template
 from urllib.parse import parse_qs
 
 def get_quiz_data(api_endpoint):
-    try:
-        response = requests.get(api_endpoint)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching quiz data: {e}")
-        return None
+    # try:
+    #     response = requests.get(api_endpoint)
+    #     response.raise_for_status()
+    #     return response.json()
+    # except requests.exceptions.RequestException as e:
+    #     print(f"Error fetching quiz data: {e}")
+    #     return None
+    return {
+        "quiz": {
+            "id": "1",
+            "name": "札幌",
+            "options": ["さっぽろ", "さつぽろ", "さぶろ", "さごろ"],
+            "correct_answer": "さっぽろ"
+        }
+    }
 
 def lambda_handler(event, context):
     api_endpoint = os.environ.get("NANDOKU_API_ENDPOINT")
@@ -25,7 +33,7 @@ def lambda_handler(event, context):
         if not quiz_data:
             return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to fetch quiz data'})}
 
-        with open('../templates/index.html', 'r', encoding='utf-8') as f:
+        with open('templates/index.html', 'r', encoding='utf-8') as f:
             template = Template(f.read())
         
         html_content = template.substitute(quiz_data=json.dumps(quiz_data))

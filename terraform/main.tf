@@ -13,7 +13,7 @@ provider "aws" {
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/../src"
+  source_dir  = "${path.module}/../dist"
   output_path = "${path.module}/../main.zip"
 }
 
@@ -47,13 +47,12 @@ resource "aws_lambda_function" "this" {
   handler = "main.lambda_handler"
   runtime = "python3.13"
 
-  environment {
-    variables = {
-      NANDOKU_API_ENDPOINT = var.api_endpoint
+        environment {
+      variables = {
+        NANDOKU_API_ENDPOINT = "https://${var.api_endpoint}"
+      }
     }
-  }
-
-  tags = {
+    tags = {
     ManagedBy = "Terraform"
     Project   = "Hokkaido Nandoku Quiz"
   }
