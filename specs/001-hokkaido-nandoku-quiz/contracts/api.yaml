@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: Hokkaido Nandoku API
+  version: 1.0.0
+  description: API for the Hokkaido Nandoku Quiz application.
+
+paths:
+  /quizzes:
+    get:
+      summary: Retrieve a random quiz question
+      responses:
+        '200':
+          description: A single quiz question.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quiz'
+
+components:
+  schemas:
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "some-unique-id"
+        name:
+          type: string
+          example: "札幌"
+        options:
+          type: array
+          items:
+            type: string
+          example: ["さっぽろ", "さつぽろ", "さぶろ", "さごろ"]
+        correct_answer:
+          type: string
+          example: "さっぽろ"

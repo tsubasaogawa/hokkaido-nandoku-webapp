@@ -1,0 +1,15 @@
+[project]
+name = "hokkaido-nandoku-webapp"
+version = "0.1.0"
+dependencies = [
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
