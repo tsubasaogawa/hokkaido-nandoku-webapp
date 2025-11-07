@@ -49,7 +49,7 @@ resource "aws_lambda_function" "this" {
 
         environment {
       variables = {
-        NANDOKU_API_ENDPOINT = "https://${var.api_endpoint}"
+        NANDOKU_API_ENDPOINT = "https://${var.api_endpoint}/random"
       }
     }
     tags = {
