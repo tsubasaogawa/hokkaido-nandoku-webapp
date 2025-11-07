@@ -14,7 +14,59 @@
     <button id="next-question" style="display: none;">次の問題へ</button>
 
     <script>
-        // JavaScriptコードは後ほどここに追加します
+        const quizData = $quiz_data;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const quizContainer = document.getElementById('quiz-container');
+            const resultContainer = document.getElementById('result');
+            const nextButton = document.getElementById('next-question');
+
+            function renderQuiz() {
+                const quiz = quizData.quiz;
+                let formHtml = `
+                    <h2>${quiz.name}</h2>
+                    <form id="quiz-form">
+                        <input type="hidden" name="quiz_id" value="${quiz.id}">
+                `;
+                quiz.options.forEach(option => {
+                    formHtml += `
+                        <input type="radio" name="answer" value="${option}" id="${option}">
+                        <label for="${option}">${option}</label><br>
+                    `;
+                });
+                formHtml += `
+                        <button type="submit">回答する</button>
+                    </form>
+                `;
+                quizContainer.innerHTML = formHtml;
+
+                const quizForm = document.getElementById('quiz-form');
+                quizForm.addEventListener('submit', handleFormSubmit);
+            }
+
+            async function handleFormSubmit(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: new URLSearchParams(formData)
+                });
+                const data = await response.json();
+                
+                if (data.result === 'correct') {
+                    resultContainer.innerHTML = '<p style="color: green;">正解！</p>';
+                } else {
+                    resultContainer.innerHTML = `<p style="color: red;">不正解！正解は「${data.correct_answer}」です。</p>`;
+                }
+                nextButton.style.display = 'block';
+            }
+
+            nextButton.addEventListener('click', () => {
+                location.reload();
+            });
+
+            renderQuiz();
+        });
     </script>
 </body>
 </html>

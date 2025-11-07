@@ -14,7 +14,7 @@
 
 ## Phase 2: Foundational Tasks
 
-- [X] T006 `main.py`で、環境変数`NANDOKU_API_ENDPOINT`を読み込み、設定されていない場合はエラーを発生させるロジックを実装します。
+- [X] T006 `main.py`で、環境変数`NANDOKU_API_ENDPOINT`を読み込み、設定されていない場合はエラーを発生させるロ-ジックを実装します。
 - [X] T007 `main.py`に、バックエンドAPIからクイズデータを取得するための関数（例: `get_quiz_data()`）を実装します。
 
 ## Phase 3: User Story 1 - クイズをプレイする
@@ -22,13 +22,13 @@
 **Goal**: ユーザーは単一のページでクイズに回答し、ページ遷移なしで結果を確認し、次の問題に進むことができます。
 **Independent Test**: ユーザーは、デプロイされたLambda Function URLにアクセスし、クイズをプレイして正解・不正解の結果を動的に確認できる必要があります。
 
-- [ ] T008 [US1] `main.py`のLambdaハンドラを更新し、GETリクエストに対して`templates/index.html`をレンダリングして返却するようにします。その際、`get_quiz_data()`を呼び出して取得したクイズ情報をテンプレートに渡します。
-- [ ] T009 [US1] `templates/index.html`を更新し、受け取ったクイズデータ（地名と選択肢）を表示するフォームと、結果表示用の領域（例: `<div id="result"></div>`）を作成します。
-- [ ] T010 [US1] `main.py`のLambdaハンドラを更新し、POSTリクエストを処理できるようにします。ユーザーの回答とクイズのIDを受け取り、正解かどうかを判定します。
-- [ ] T011 [US1] `main.py`のPOSTリクエストハンドラを修正し、HTMLをレンダリングする代わりに、判定結果（例: `{"result": "correct"}` または `{"result": "incorrect", "correct_answer": "..."}`）をJSON形式で返却するようにします。
-- [ ] T012 [US1] `templates/index.html`にJavaScriptを追加します。このスクリプトは、フォームの送信をインターセプトし、`fetch` APIを使用して非同期でPOSTリクエストをバックエンドに送信します。
-- [ ] T013 [US1] `templates/index.html`のJavaScriptを更新し、バックエンドから受け取ったJSONレスポンスに基づいて、結果表示用の領域のDOMを動的に書き換え、「正解」または「不正解」と正解の答えを表示するようにします。
-- [ ] T014 [US1] `templates/index.html`に「次の問題へ」ボタンを追加し、クリックされるとページをリロードして新しいクイズを取得するJavaScriptのロジックを実装します。
+- [X] T008 [US1] `main.py`のLambdaハンドラを更新し、GETリクエストに対して`templates/index.html`をレンダリングして返却するようにします。その際、`get_quiz_data()`を呼び出して取得したクイズ情報をテンプレートに渡します。
+- [X] T009 [US1] `templates/index.html`を更新し、受け取ったクイズデータ（地名と選択肢）を表示するフォームと、結果表示用の領域（例: `<div id="result"></div>`）を作成します。
+- [X] T010 [US1] `main.py`のLambdaハンドラを更新し、POSTリクエストを処理できるようにします。ユーザーの回答とクイズのIDを受け取り、正解かどうかを判定します。
+- [X] T011 [US1] `main.py`のPOSTリクエストハンドラを修正し、HTMLをレンダリングする代わりに、判定結果（例: `{"result": "correct"}` または `{"result": "incorrect", "correct_answer": "..."}`）をJSON形式で返却するようにします。
+- [X] T012 [US1] `templates/index.html`にJavaScriptを追加します。このスクリプトは、フォームの送信をインターセプトし、`fetch` APIを使用して非同期でPOSTリクエストをバックエンドに送信します。
+- [X] T013 [US1] `templates/index.html`のJavaScriptを更新し、バックエンドから受け取ったJSONレスポンスに基づいて、結果表示用の領域のDOMを動的に書き換え、「正解」または「不正解」と正解の答えを表示するようにします。
+- [X] T014 [US1] `templates/index.html`に「次の問題へ」ボタンを追加し、クリックされるとページをリロードして新しいクイズを取得するJavaScriptのロジックを実装します。
 
 ## Phase 4: Polish & Cross-Cutting Concerns
 

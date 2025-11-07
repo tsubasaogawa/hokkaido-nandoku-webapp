@@ -1,11 +1,13 @@
 import json
 import os
 import requests
+from string import Template
+from urllib.parse import parse_qs
 
 def get_quiz_data(api_endpoint):
     try:
         response = requests.get(api_endpoint)
-        response.raise_for_status()  # Raise an exception for bad status codes
+        response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error fetching quiz data: {e}")
@@ -14,13 +16,37 @@ def get_quiz_data(api_endpoint):
 def lambda_handler(event, context):
     api_endpoint = os.environ.get("NANDOKU_API_ENDPOINT")
     if not api_endpoint:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': 'NANDOKU_API_ENDPOINT is not set'})
-        }
+        return {'statusCode': 500, 'body': json.dumps({'error': 'NANDOKU_API_ENDPOINT is not set'})}
 
-    # TODO: Implement GET and POST handling
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
-    }
+    method = event['requestContext']['http']['method']
+
+    if method == 'GET':
+        quiz_data = get_quiz_data(api_endpoint)
+        if not quiz_data:
+            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to fetch quiz data'})}
+
+        with open('templates/index.html', 'r', encoding='utf-8') as f:
+            template = Template(f.read())
+        
+        html_content = template.substitute(quiz_data=json.dumps(quiz_data))
+        return {'statusCode': 200, 'headers': {'Content-Type': 'text/html'}, 'body': html_content}
+
+    elif method == 'POST':
+        body = parse_qs(event['body'])
+        user_answer = body.get('answer', [None])[0]
+        quiz_id = body.get('quiz_id', [None])[0]
+
+        # In a real app, you'd fetch the specific quiz by ID to get the correct answer.
+        # Here, we'll re-fetch a random one and assume it's the same for simplicity.
+        quiz_data = get_quiz_data(f"{api_endpoint}/{quiz_id}")
+        if not quiz_data:
+            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to verify answer'})}
+
+        correct_answer = quiz_data['quiz']['correct_answer']
+        
+        if user_answer == correct_answer:
+            return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'correct'})}
+        else:
+            return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'incorrect', 'correct_answer': correct_answer})}
+
+    return {'statusCode': 405, 'body': json.dumps({'error': 'Method Not Allowed'})}
