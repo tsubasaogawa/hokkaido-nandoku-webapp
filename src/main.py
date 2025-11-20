@@ -4,24 +4,12 @@ from pydantic import BaseModel
 import random
 import json
 from string import Template
+import os
+import httpx
 
 from .bedrock_client import BedrockClient, BedrockConnectionError
 
 app = FastAPI()
-
-# ダミーのクイズデータ。将来的にはデータベースなどから取得する。
-CITIES_DATA = {
-    "sapporo": {"name": "札幌", "yomi": "さっぽろ"},
-    "hakodate": {"name": "函館", "yomi": "はこだて"},
-    "otaru": {"name": "小樽", "yomi": "おたる"},
-    "asahikawa": {"name": "旭川", "yomi": "あさひかわ"},
-    "muroran": {"name": "室蘭", "yomi": "むろらん"},
-    "kushiro": {"name": "釧路", "yomi": "くしろ"},
-    "obihiro": {"name": "帯広", "yomi": "おびひろ"},
-    "kitami": {"name": "北見", "yomi": "きたみ"},
-    "yubari": {"name": "夕張", "yomi": "ゆうばり"},
-    "iwamizawa": {"name": "岩見沢", "yomi": "いわみざわ"},
-}
 
 bedrock_client = BedrockClient()
 
@@ -40,12 +28,31 @@ class AnswerResponse(BaseModel):
     result: str
     correct_answer: str | None = None
 
+async def fetch_city_data(city_id: str) -> dict:
+    """APIから都市データを取得する"""
+    api_endpoint = os.environ.get("NANDOKU_API_ENDPOINT")
+    if not api_endpoint:
+        raise HTTPException(status_code=500, detail="NANDOKU_API_ENDPOINT is not set")
+
+    url = f"{api_endpoint}/{city_id}"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                raise HTTPException(status_code=404, detail="City not found") from e
+            else:
+                raise HTTPException(status_code=500, detail="API request failed") from e
+        except httpx.RequestError as e:
+            raise HTTPException(status_code=500, detail="API request failed") from e
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    # 最初のクイズの問題をランダムに選ぶ
-    random_city_id = random.choice(list(CITIES_DATA.keys()))
-    quiz_data = get_quiz_data(random_city_id)
+    """ルートページ。ランダムなクイズを表示する"""
+    city_info = await fetch_city_data("random")
+    quiz_data = await get_quiz_data(city_info)
 
     with open('templates/index.html', 'r', encoding='utf-8') as f:
         template = Template(f.read())
@@ -53,17 +60,16 @@ async def read_root():
     html_content = template.safe_substitute(quiz_data=json.dumps(quiz_data))
     return HTMLResponse(content=html_content)
 
-
 @app.get("/quiz/{city_id}", response_model=QuizResponse)
 async def get_quiz(city_id: str):
-    return get_quiz_data(city_id)
+    """指定されたIDのクイズを取得する"""
+    city_info = await fetch_city_data(city_id)
+    return await get_quiz_data(city_info)
 
-def get_quiz_data(city_id: str) -> dict:
-    if city_id not in CITIES_DATA:
-        raise HTTPException(status_code=404, detail="City not found")
-
-    city_info = CITIES_DATA[city_id]
+async def get_quiz_data(city_info: dict) -> dict:
+    """都市情報からクイズデータを生成する"""
     correct_answer = city_info["yomi"]
+    city_id = city_info.get("id", city_info.get("name")) # APIがIDを返すことを想定
 
     try:
         incorrect_options = bedrock_client.generate_options(city_info["name"])
@@ -84,6 +90,6 @@ def get_quiz_data(city_id: str) -> dict:
 @app.post("/answer", response_model=AnswerResponse)
 async def check_answer(request: AnswerRequest):
     if request.answer == request.correct_answer:
-        return {"result": "correct"}
+        return {"result": "correct", "correct_answer": None}
     else:
         return {"result": "incorrect", "correct_answer": request.correct_answer}

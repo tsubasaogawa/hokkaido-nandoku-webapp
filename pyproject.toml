@@ -5,6 +5,7 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "boto3",
+    "httpx",
 ]
 
 [project.optional-dependencies]
@@ -12,7 +13,11 @@ dev = [
     "pytest",
     "pytest-mock",
     "httpx",
+    "pytest-asyncio",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
