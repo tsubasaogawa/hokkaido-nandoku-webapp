@@ -2,7 +2,8 @@ from fastapi.testclient import TestClient
 from src.main import app, CITIES_DATA, bedrock_client
 from src.bedrock_client import BedrockConnectionError
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import patch, MagicMock
+import random
 
 client = TestClient(app)
 
@@ -69,7 +70,7 @@ def test_check_answer_correct():
         }
     )
     assert response.status_code == 200
-    assert response.json() == {"result": "correct"}
+    assert response.json() == {"result": "correct", "correct_answer": None}
 
 def test_check_answer_incorrect():
     """不正解の場合のテスト"""

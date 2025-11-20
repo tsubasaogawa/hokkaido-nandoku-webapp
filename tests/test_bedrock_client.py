@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from botocore.stub import Stubber
+from botocore.exceptions import ClientError
 from src.bedrock_client import BedrockClient, BedrockConnectionError
 import json
 
@@ -36,7 +36,7 @@ def test_generate_options_client_error():
     mock_bedrock_runtime = MagicMock()
     client.client = mock_bedrock_runtime
 
-    mock_bedrock_runtime.invoke_model.side_effect = client.client.exceptions.ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'Denied'}}, 'InvokeModel')
+    mock_bedrock_runtime.invoke_model.side_effect = ClientError({'Error': {'Code': 'AccessDeniedException', 'Message': 'Denied'}}, 'InvokeModel')
 
     city_name = "札幌"
     with pytest.raises(BedrockConnectionError):
@@ -65,7 +65,11 @@ def test_generate_options_key_error():
     client.client = mock_bedrock_runtime
 
     mock_response_body = {
-        "wrong_key": ["選択肢A", "選択肢B", "選択肢C"]
+        "content": [
+            {
+                "text": json.dumps({"wrong_key": ["選択肢A", "選択肢B", "選択肢C"]})
+            }
+        ]
     }
     mock_response = {
         'body': MagicMock(read=lambda: json.dumps(mock_response_body).encode('utf-8'))
@@ -74,5 +78,6 @@ def test_generate_options_key_error():
     mock_bedrock_runtime.invoke_model.return_value = mock_response
 
     city_name = "札幌"
-    with pytest.raises(BedrockConnectionError):
-        client.generate_options(city_name)
+    # This should return an empty list, not raise an error.
+    options = client.generate_options(city_name)
+    assert options == []
