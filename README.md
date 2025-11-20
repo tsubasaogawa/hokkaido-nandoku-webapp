@@ -16,6 +16,19 @@
 - Terraform 1.0+
 - AWSアカウントと設定済みの認証情報
 
+### ローカル開発時のAWS認証情報
+
+このアプリケーションはAWS Lambda上での実行を想定しており、IAMロールによってBedrockへのアクセス権限が付与されます。
+
+ローカルで開発・テストを行う場合は、以下の環境変数を設定してください。
+
+```bash
+export AWS_ACCESS_KEY_ID="YOUR_ACCESS_KEY"
+export AWS_SECRET_ACCESS_KEY="YOUR_SECRET_KEY"
+export AWS_SESSION_TOKEN="YOUR_SESSION_TOKEN" # (Optional)
+export AWS_DEFAULT_REGION="ap-northeast-1"
+```
+
 ### 手順
 
 1.  **リポジトリをクローンします:**

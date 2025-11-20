@@ -51,26 +51,26 @@
 
 ### Implementation Tasks
 
-- [ ] T009 [US2] `src/bedrock_client.py` のAPI呼び出し部分に `try...except ClientError` ブロックを追加する
-- [ ] T010 [US2] `ClientError` が発生した場合に、カスタム例外（例: `BedrockConnectionError`）を送出するように `src/bedrock_client.py` を修正する
-- [ ] T011 [US2] `src/main.py` のBedrockクライアント呼び出し部分を `try...except BedrockConnectionError` ブロックで囲む
-- [ ] T012 [US2] 例外が発生した場合、静的に定義されたダミーの選択肢をレスポンスとして返すフォールバック処理を `src/main.py` に実装する
+- [X] T009 [US2] `src/bedrock_client.py` のAPI呼び出し部分に `try...except ClientError` ブロックを追加する
+- [X] T010 [US2] `ClientError` が発生した場合に、カスタム例外（例: `BedrockConnectionError`）を送出するように `src/bedrock_client.py` を修正する
+- [X] T011 [US2] `src/main.py` のBedrockクライアント呼び出し部分を `try...except BedrockConnectionError` ブロックで囲む
+- [X] T012 [US2] 例外が発生した場合、静的に定義されたダミーの選択肢をレスポンスとして返すフォールバック処理を `src/main.py` に実装する
 
 ## Phase 5: Testing
 
 実装されたロジックの品質を担保するための単体テストを作成します。
 
-- [ ] T013 [P] Bedrock APIが正常に選択肢を返す場合の `bedrock_client` の単体テストを `tests/test_bedrock_client.py` に作成する (boto3の`Stubber`を使用)
-- [ ] T014 [P] Bedrock APIが `ClientError` を返す場合の `bedrock_client` の単体テストを `tests/test_bedrock_client.py` に作成する
-- [ ] T015 [P] [US1] `/quiz/{city_id}` エンドポイントの正常系テスト（Bedrockクライアントをモック化）を `tests/test_main.py` に追加する
-- [ ] T016 [P] [US2] `/quiz/{city_id}` エンドポイントの異常系・フォールバックテスト（Bedrockクライアントをモック化）を `tests/test_main.py` に追加する
+- [X] T013 [P] Bedrock APIが正常に選択肢を返す場合の `bedrock_client` の単体テストを `tests/test_bedrock_client.py` に作成する (boto3の`Stubber`を使用)
+- [X] T014 [P] Bedrock APIが `ClientError` を返す場合の `bedrock_client` の単体テストを `tests/test_bedrock_client.py` に作成する
+- [X] T015 [P] [US1] `/quiz/{city_id}` エンドポイントの正常系テスト（Bedrockクライアントをモック化）を `tests/test_main.py` に追加する
+- [X] T016 [P] [US2] `/quiz/{city_id}` エンドポイントの異常系・フォールバックテスト（Bedrockクライアントをモック化）を `tests/test_main.py` に追加する
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 最終的なコードの品質向上とドキュメントの更新を行います。
 
 - [ ] T017 [P] `src` ディレクトリ全体に対して `ruff` フォーマッタを適用する
-- [ ] T018 [P] `README.md` に、ローカル開発時のAWS認証情報設定に関する説明を追記する
+- [X] T018 [P] `README.md` に、ローカル開発時のAWS認証情報設定に関する説明を追記する
 
 ## Dependencies
 
