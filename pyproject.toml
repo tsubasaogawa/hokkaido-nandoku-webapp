@@ -2,7 +2,9 @@
 name = "hokkaido-nandoku-webapp"
 version = "0.1.0"
 dependencies = [
-    "requests",
+    "fastapi",
+    "uvicorn",
+    "boto3",
 ]
 
 [project.optional-dependencies]
