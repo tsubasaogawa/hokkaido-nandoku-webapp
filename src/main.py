@@ -6,8 +6,9 @@ import json
 from string import Template
 import os
 import httpx
+from mangum import Mangum
 
-from .bedrock_client import BedrockClient, BedrockConnectionError
+from bedrock_client import BedrockClient, BedrockConnectionError
 
 app = FastAPI()
 
@@ -66,6 +67,10 @@ async def get_quiz(city_id: str):
     city_info = await fetch_city_data(city_id)
     return await get_quiz_data(city_info)
 
+import logging
+
+# ...
+
 async def get_quiz_data(city_info: dict) -> dict:
     """都市情報からクイズデータを生成する"""
     correct_answer = city_info["yomi"]
@@ -73,7 +78,8 @@ async def get_quiz_data(city_info: dict) -> dict:
 
     try:
         incorrect_options = bedrock_client.generate_options(city_info["name"])
-    except BedrockConnectionError:
+    except BedrockConnectionError as e:
+        logging.error(f"Bedrock connection error: {e}")
         # フォールバック処理
         incorrect_options = ["ダミー1", "ダミー2", "ダミー3"]
 
@@ -93,3 +99,5 @@ async def check_answer(request: AnswerRequest):
         return {"result": "correct", "correct_answer": None}
     else:
         return {"result": "incorrect", "correct_answer": request.correct_answer}
+
+lambda_handler = Mangum(app)

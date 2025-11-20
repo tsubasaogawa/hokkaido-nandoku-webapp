@@ -43,27 +43,55 @@ export AWS_DEFAULT_REGION="ap-northeast-1"
     ```
     (事前に `uv` のインストールが必要です)
 
-## デプロイ
+## ログ調査によるデバッグ方法
+
+AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認することが最も効果的なデバッグ方法です。
+
+1.  **ロググループの特定**:
+    Lambda 関数のログは、通常 `/aws/lambda/<関数名>` というロググループに保存されます。このアプリケーションの場合、ロググループ名は `/aws/lambda/hokkaido-nandoku-quiz` です。
+
+2.  **最新のログストリームの取得**:
+    以下の AWS CLI コマンドで、最新のログストリーム名を取得します。
+    ```bash
+    aws logs describe-log-streams --log-group-name /aws/lambda/hokkaido-nandoku-quiz --order-by LastEventTime --descending --limit 1 --query 'logStreams[0].logStreamName' --output text
+    ```
+
+3.  **ログイベントの取得**:
+    取得したログストリーム名を使用して、最新のログイベントを取得します。
+    ```bash
+    aws logs get-log-events --log-group-name /aws/lambda/hokkaido-nandoku-quiz --log-stream-name '<取得したログストリーム名>' --limit 20
+    ```
+    これにより、エラーメッセージやスタックトレースなど、問題解決の手がかりとなる情報が得られます。
+
+## デプロイ手順
 
 このアプリケーションはTerraformを使用してAWSにデプロイされます。
 
-1.  **Terraformの作業ディレクトリに移動します:**
+1.  **Pythonの依存関係をインストールし、デプロイパッケージを作成します**:
+    `src` ディレクトリのコードと、必要なPythonライブラリを `dist` ディレクトリにパッケージングします。Lambda の実行環境と互換性のあるバイナリをインストールするため、`--platform` オプションを使用します。
+    ```bash
+    rm -rf dist/*
+    pip install . -t dist --platform manylinux2014_x86_64 --python-version 3.13 --only-binary=:all:
+    cp -r src/* dist/
+    ```
+
+2.  **Terraformの作業ディレクトリに移動します**:
     ```bash
     cd terraform
     ```
 
-2.  **Terraformを初期化します:**
+3.  **Terraformを初期化します**:
     ```bash
     terraform init
     ```
 
-3.  **デプロイ計画を確認します:**
+4.  **デプロイ計画を確認します**:
+    `api_endpoint` 変数には、`hokkaido-nandoku-api` のデプロイ済みエンドポイントURL（例: `ecif1srlak.execute-api.ap-northeast-1.amazonaws.com`）を指定します。末尾の `/random` は含めないでください。
     ```bash
     terraform plan -var "api_endpoint=<YOUR_API_ENDPOINT>"
     ```
-    `<YOUR_API_ENDPOINT>` を、`hokkaido-nandoku-api`のデプロイ済みエンドポイントURLに置き換えてください。
 
-4.  **リソースを適用（デプロイ）します:**
+5.  **リソースを適用（デプロイ）します**:
     ```bash
     terraform apply -var "api_endpoint=<YOUR_API_ENDPOINT>" -auto-approve
     ```

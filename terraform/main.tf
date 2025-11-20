@@ -30,6 +30,20 @@ resource "aws_iam_role" "lambda_exec" {
       }
     }]
   })
+
+  inline_policy {
+    name = "bedrock-access"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action   = "bedrock:InvokeModel"
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_policy" {
@@ -46,10 +60,11 @@ resource "aws_lambda_function" "this" {
 
   handler = "main.lambda_handler"
   runtime = "python3.13"
+  timeout = 30
 
         environment {
       variables = {
-        NANDOKU_API_ENDPOINT = "https://${var.api_endpoint}/random"
+        NANDOKU_API_ENDPOINT = "https://${var.api_endpoint}"
       }
     }
     tags = {
