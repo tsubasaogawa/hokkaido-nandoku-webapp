@@ -1,15 +1,27 @@
 [project]
 name = "hokkaido-nandoku-webapp"
 version = "0.1.0"
+description = "A web application for Hokkaido Nandoku Quiz."
+authors = [{ name = "Your Name", email = "you@example.com" }]
 dependencies = [
-    "requests",
+    "fastapi",
+    "uvicorn",
+    "boto3",
+    "httpx",
+    "mangum",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
     "pytest-mock",
+    "httpx",
+    "pytest-asyncio",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

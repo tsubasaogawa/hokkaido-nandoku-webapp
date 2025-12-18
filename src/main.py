@@ -1,69 +1,89 @@
-import json
-import os
-import requests
+from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 import random
-from string import Template
-from urllib.parse import parse_qs
-import base64
+import os
+import httpx
+from mangum import Mangum
 
-def get_quiz_data(api_endpoint):
-    try:
-        response = requests.get(api_endpoint)
-        response.raise_for_status()
-        api_data = response.json()
+from bedrock_client import BedrockClient, BedrockConnectionError
+import logging
 
-        # APIレスポンスをアプリケーションの形式に変換
-        correct_answer = api_data['yomi']
-        options = [correct_answer, 'ダミー1', 'ダミー2', 'ダミー3']
-        random.shuffle(options)
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+bedrock_client = BedrockClient()
 
-        return {
-            "quiz": {
-                "id": api_data['name'],
-                "name": api_data['name'],
-                "options": options,
-                "correct_answer": correct_answer
-            }
-        }
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching quiz data: {e}")
-        return None
+class QuizResponse(BaseModel):
+    id: str
+    name: str
+    options: list[str]
+    correct_answer: str
 
-def lambda_handler(event, context):
+class AnswerResponse(BaseModel):
+    result: str
+    correct_answer: str | None = None
+
+async def fetch_random_city_data() -> dict:
+    """APIからランダムな都市データを取得する"""
     api_endpoint = os.environ.get("NANDOKU_API_ENDPOINT")
     if not api_endpoint:
-        return {'statusCode': 500, 'body': json.dumps({'error': 'NANDOKU_API_ENDPOINT is not set'})}
+        raise HTTPException(status_code=500, detail="NANDOKU_API_ENDPOINT is not set")
 
-    method = event['requestContext']['http']['method']
+    url = f"{api_endpoint}/random"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
+            response.raise_for_status()
+            return response.json()
+        except (httpx.HTTPStatusError, httpx.RequestError) as e:
+            logging.error(f"API request failed: {e}")
+            raise HTTPException(status_code=500, detail="Failed to fetch quiz data from external API.")
 
-    if method == 'GET':
-        quiz_data = get_quiz_data(api_endpoint)
-        if not quiz_data:
-            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to fetch quiz data'})}
+async def get_quiz_data(city_info: dict) -> dict:
+    """都市情報からクイズデータを生成する"""
+    correct_answer = city_info["yomi"] # 正解は「よみ」
+    city_id = city_info.get("id")
 
-        with open('templates/index.html', 'r', encoding='utf-8') as f:
-            template = Template(f.read())
-        
-        html_content = template.safe_substitute(quiz_data=json.dumps(quiz_data))
-        return {'statusCode': 200, 'headers': {'Content-Type': 'text/html'}, 'body': html_content}
+    try:
+        # Bedrockには「漢字」を渡して選択肢を生成させる
+        incorrect_options = bedrock_client.generate_options(city_info["name"])
+    except BedrockConnectionError as e:
+        logging.error(f"Bedrock connection error: {e}")
+        incorrect_options = ["ダミー1", "ダミー2", "ダミー3"]
 
-    elif method == 'POST':
-        # print(event) # デバッグ用にeventの内容を出力
-        body_content = event['body']
-        if event.get('isBase64Encoded', False):
-            body_content = base64.b64decode(body_content).decode('utf-8')
+    options = [correct_answer] + incorrect_options
+    random.shuffle(options) # 選択肢をシャッフル
 
-        body = parse_qs(body_content)
-        user_answer = body.get('answer', [None])[0]
-        quiz_id = body.get('quiz_id', [None])[0]
-        correct_answer_from_client = body.get('correct_answer', [None])[0]
+    return {
+        "id": city_id,
+        "name": city_info["name"], # 問題文は「漢字」
+        "options": options,
+        "correct_answer": correct_answer,
+    }
 
-        if not quiz_id or not user_answer or not correct_answer_from_client:
-            return {'statusCode': 400, 'body': json.dumps({'error': 'Missing quiz_id, answer, or correct_answer'})}
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    """ルートページ。ランダムなクイズを表示する"""
+    try:
+        city_info = await fetch_random_city_data()
+        quiz_data = await get_quiz_data(city_info)
+    except HTTPException as e:
+        # エラーページをレンダリングするか、単純なエラーメッセージを返す
+        return HTMLResponse(content=f"<h1>エラーが発生しました</h1><p>{e.detail}</p>", status_code=e.status_code)
 
-        if user_answer == correct_answer_from_client:
-            return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'correct'})}
-        else:
-            return {'statusCode': 200, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'result': 'incorrect', 'correct_answer': correct_answer_from_client})}
+    return templates.TemplateResponse("index.html", {"request": request, "quiz": quiz_data})
 
-    return {'statusCode': 405, 'body': json.dumps({'error': 'Method Not Allowed'})}
+
+@app.post("/", response_class=JSONResponse)
+async def check_answer(correct_answer: str = Form(...), answer: str = Form(...)):
+    """
+    ユーザーの回答をチェックし、正解/不正解と正解の選択肢を返す。
+    """
+    is_correct = (answer == correct_answer)
+    return {
+        "result": "correct" if is_correct else "incorrect",
+        "correct_answer": correct_answer
+    }
+
+lambda_handler = Mangum(app)
