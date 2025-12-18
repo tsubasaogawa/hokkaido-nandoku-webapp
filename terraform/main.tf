@@ -40,6 +40,14 @@ resource "aws_iam_role" "lambda_exec" {
           Action   = "bedrock:InvokeModel"
           Effect   = "Allow"
           Resource = "*"
+        },
+        {
+          Action   = [
+            "aws-marketplace:ViewSubscriptions",
+            "aws-marketplace:Subscribe"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
         }
       ]
     })

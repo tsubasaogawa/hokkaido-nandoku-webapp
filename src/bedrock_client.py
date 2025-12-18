@@ -4,6 +4,7 @@ from botocore.exceptions import ClientError
 import os
 import json
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class BedrockClient:
     """
     A client for interacting with the Amazon Bedrock API.
     """
-    MODEL_ID = "anthropic.claude-haiku-4-5-20251001-v1:0"
+    MODEL_ID = "apac.anthropic.claude-3-haiku-20240307-v1:0"
 
     def __init__(self):
         """
@@ -50,30 +51,58 @@ class BedrockClient:
         正解の選択肢「{city_name}」と非常によく似ていて、間違いやすい選択肢を3つだけ挙げてください。
         JSON形式で、"options"というキーに、文字列の配列として3つの選択肢を入れてください。
         例:
+        ```json
         {{
             "options": ["おしゃまんべ", "おさまんべ", "おしゃまべ"]
         }}
+        ```
         """
         
         try:
-            response = self.client.invoke_model(
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"text": prompt}
+                    ]
+                }
+            ]
+
+            response = self.client.converse(
                 modelId=self.MODEL_ID,
-                body=json.dumps({
-                    "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 1000,
-                    "messages": [{"role": "user", "content": prompt}]
-                })
+                messages=messages,
+                inferenceConfig={
+                    "maxTokens": 1000,
+                }
             )
-            
-            response_body = json.loads(response['body'].read())
-            content_string = response_body['content'][0]['text']
-            options_json = json.loads(content_string)
+
+            response_body = response['output']['message']['content'][0]['text']
+            logger.info(f"Raw Bedrock response body: {response_body}")
+
+            # Extract JSON part from the response markdown
+            json_match = re.search(r'```json\n(\{.*?\})\n```', response_body, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1)
+            else:
+                # Fallback to finding the first JSON object if markdown is not present
+                json_match = re.search(r'(\{.*?\})', response_body, re.DOTALL)
+                if json_match:
+                    json_str = json_match.group(1)
+                else:
+                    logger.error("No JSON found in Bedrock response")
+                    return []
+
+            options_json = json.loads(json_str)
             
             return options_json.get("options", [])
 
         except ClientError as e:
             logger.error(f"Bedrock API error: {e}")
             raise BedrockConnectionError from e
-        except (json.JSONDecodeError, KeyError) as e:
+        except (json.JSONDecodeError, KeyError, IndexError) as e:
             logger.error(f"Failed to parse Bedrock response: {e}")
             raise BedrockConnectionError from e
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {e}", exc_info=True)
+            raise BedrockConnectionError from e
+
