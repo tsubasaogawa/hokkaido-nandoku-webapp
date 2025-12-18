@@ -42,21 +42,22 @@ async def fetch_random_city_data() -> dict:
 
 async def get_quiz_data(city_info: dict) -> dict:
     """都市情報からクイズデータを生成する"""
-    correct_answer = city_info["name"] # APIの 'name' が正解の読み方と想定
+    correct_answer = city_info["yomi"] # 正解は「よみ」
     city_id = city_info.get("id")
 
     try:
+        # Bedrockには「漢字」を渡して選択肢を生成させる
         incorrect_options = bedrock_client.generate_options(city_info["name"])
     except BedrockConnectionError as e:
         logging.error(f"Bedrock connection error: {e}")
         incorrect_options = ["ダミー1", "ダミー2", "ダミー3"]
 
     options = [correct_answer] + incorrect_options
-    # random.shuffle(options) # 正解が常に最初に来るように一旦コメントアウト
+    random.shuffle(options) # 選択肢をシャッフル
 
     return {
         "id": city_id,
-        "name": city_info["name"],
+        "name": city_info["name"], # 問題文は「漢字」
         "options": options,
         "correct_answer": correct_answer,
     }
