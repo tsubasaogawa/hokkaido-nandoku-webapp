@@ -14,7 +14,7 @@
     <button id="next-question" style="display: none;">次の問題へ</button>
 
     <script>
-        const quizData = ${quiz_data};
+        const quizData = {{ quiz | tojson }};
         
         document.addEventListener('DOMContentLoaded', () => {
             const quizContainer = document.getElementById('quiz-container');
@@ -22,7 +22,7 @@
             const nextButton = document.getElementById('next-question');
 
             function renderQuiz() {
-                const quiz = quizData.quiz;
+                const quiz = quizData;
                 let formHtml = `
                     <h2>${quiz.name}</h2>
                     <form id="quiz-form">
