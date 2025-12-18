@@ -71,8 +71,9 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
     `src` ディレクトリのコードと、必要なPythonライブラリを `dist` ディレクトリにパッケージングします。Lambda の実行環境と互換性のあるバイナリをインストールするため、`--platform` オプションを使用します。
     ```bash
     rm -rf dist/*
-    pip install . -t dist --platform manylinux2014_x86_64 --python-version 3.13 --only-binary=:all:
+    pip install . jinja2 python-multipart -t dist --platform manylinux2014_x86_64 --python-version 3.13 --only-binary=:all:
     cp -r src/* dist/
+    cp -r templates dist/
     ```
 
 2.  **Terraformの作業ディレクトリに移動します**:
