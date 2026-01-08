@@ -22,6 +22,7 @@ tests/
 : Follow standard conventions
 
 ## Recent Changes
+- 003-cache-bedrock-options: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 - 001-hokkaido-nandoku-quiz: Added
 
