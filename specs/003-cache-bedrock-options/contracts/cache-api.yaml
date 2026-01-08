@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: Internal Cache API
+  version: 1.0.0
+  description: >
+    Lambda関数内部で使用される、DynamoDBキャッシュへのアクセスコントラクト。
+    これはHTTP APIではなく、関数呼び出しのインターフェースを概念的に定義したものである。
+
+paths:
+  /options/{city_name}:
+    get:
+      summary: キャッシュされた選択肢を取得
+      parameters:
+        - name: city_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: クイズの問題となる都市名（漢字）
+      responses:
+        '200':
+          description: キャッシュヒット
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: キャッシュミス（データなし）
+    
+    put:
+      summary: 生成された選択肢をキャッシュに保存
+      parameters:
+        - name: city_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                options:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '204':
+          description: 保存成功
