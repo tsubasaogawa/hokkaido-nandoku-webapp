@@ -4,6 +4,7 @@ from src.bedrock_client import BedrockConnectionError
 import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 import os
+import time
 
 client = TestClient(app)
 
@@ -22,6 +23,12 @@ def mock_bedrock_client():
         yield mock_client
 
 @pytest.fixture
+def mock_dynamodb_table():
+    """DynamoDB Tableをモック化するフィクスチャ"""
+    with patch('src.main.table') as mock_table:
+        yield mock_table
+
+@pytest.fixture
 def mock_httpx_client():
     """httpx.AsyncClientをモック化するフィクスチャ"""
     with patch('httpx.AsyncClient') as mock_client_class:
@@ -30,83 +37,73 @@ def mock_httpx_client():
         yield mock_client
 
 @pytest.mark.asyncio
-async def test_read_root_success(mock_bedrock_client, mock_httpx_client):
-    """ルートエンドポイントが正常にHTMLを返すテスト"""
+async def test_read_root_cache_miss(mock_bedrock_client, mock_httpx_client, mock_dynamodb_table):
+    """キャッシュミス時の動作テスト: Bedrockが呼ばれ、キャッシュに保存される"""
     mock_response = AsyncMock()
     mock_response.status_code = 200
     mock_response.json = MagicMock(return_value={"id": "sapporo", "name": "札幌", "yomi": "さっぽろ"})
     mock_httpx_client.get.return_value = mock_response
     
+    # キャッシュミスをシミュレート
+    mock_dynamodb_table.get_item.return_value = {}
+
     response = client.get("/")
+    
     assert response.status_code == 200
-    assert "text/html" in response.headers['content-type']
-    assert "北海道難読地名クイズ" in response.text
-    mock_httpx_client.get.assert_called_once_with("https://test-api.example.com/random")
+    
+    # Bedrockが呼ばれたことを確認
+    mock_bedrock_client.generate_options.assert_called_once_with("札幌")
+    
+    # キャッシュに保存されたことを確認
+    mock_dynamodb_table.put_item.assert_called_once()
+    args, kwargs = mock_dynamodb_table.put_item.call_args
+    item = kwargs['Item']
+    assert item['cache_key'] is not None
+    assert item['options'] == ["ダミー1", "ダミー2", "ダミー3"]
+    assert item['expires_at'] > time.time()
 
 @pytest.mark.asyncio
-async def test_get_quiz_success(mock_bedrock_client, mock_httpx_client):
-    """クイズエンドポイントが正常にクイズデータを返すテスト"""
-    city_id = "sapporo"
-    city_data = {"id": city_id, "name": "札幌", "yomi": "さっぽろ"}
+async def test_read_root_cache_hit(mock_bedrock_client, mock_httpx_client, mock_dynamodb_table):
+    """キャッシュヒット時の動作テスト: Bedrockが呼ばれず、キャッシュから値が返される"""
     mock_response = AsyncMock()
     mock_response.status_code = 200
-    mock_response.json = MagicMock(return_value=city_data)
-    mock_httpx_client.get.return_value = mock_response
-
-    response = client.get(f"/quiz/{city_id}")
-    assert response.status_code == 200
-    data = response.json()
-    assert data['id'] == city_id
-    assert data['name'] == city_data['name']
-    assert data['correct_answer'] == city_data['yomi']
-    assert len(data['options']) == 4
-    assert city_data['yomi'] in data['options']
-    mock_bedrock_client.generate_options.assert_called_once_with(city_data['name'])
-    mock_httpx_client.get.assert_called_once_with(f"https://test-api.example.com/{city_id}")
-
-@pytest.mark.asyncio
-async def test_get_quiz_api_not_found(mock_bedrock_client, mock_httpx_client):
-    """APIが404を返す場合のテスト"""
-    import httpx
-    mock_httpx_client.get.side_effect = httpx.HTTPStatusError(
-        "Not Found", request=httpx.Request("GET", "https://test-api.example.com/nonexistent_city"), response=httpx.Response(404, request=httpx.Request("GET", "https://test-api.example.com/nonexistent_city"))
-    )
-    
-    response = client.get("/quiz/nonexistent_city")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "City not found"}
-
-@pytest.mark.asyncio
-async def test_get_quiz_bedrock_error_fallback(mock_bedrock_client, mock_httpx_client):
-    """Bedrockエラー時にフォールバックするテスト"""
-    city_id = "sapporo"
-    city_data = {"name": "札幌", "yomi": "さっぽろ"}
-    mock_response = AsyncMock()
-    mock_response.status_code = 200
-    mock_response.json = MagicMock(return_value=city_data)
+    mock_response.json = MagicMock(return_value={"id": "sapporo", "name": "札幌", "yomi": "さっぽろ"})
     mock_httpx_client.get.return_value = mock_response
     
-    mock_bedrock_client.generate_options.side_effect = BedrockConnectionError("Bedrock connection failed")
-    
-    response = client.get(f"/quiz/{city_id}")
-    assert response.status_code == 200
-    data = response.json()
-    assert "ダミー1" in data['options']
+    # キャッシュヒットをシミュレート（ASCII文字列を使用してエスケープ問題を回避）
+    cached_options = ["CacheOption1", "CacheOption2", "CacheOption3"]
+    mock_dynamodb_table.get_item.return_value = {'Item': {'options': cached_options}}
 
-def test_check_answer_correct():
+    response = client.get("/")
+    
+    assert response.status_code == 200
+    
+    # Bedrockが呼ばれていないことを確認
+    mock_bedrock_client.generate_options.assert_not_called()
+    
+    # PutItemも呼ばれていないことを確認
+    mock_dynamodb_table.put_item.assert_not_called()
+    
+    # レスポンスにキャッシュされたオプションが含まれているか確認
+    response_text = response.text
+    assert "CacheOption1" in response_text
+
+@pytest.mark.asyncio
+async def test_check_answer_correct():
     """正解の場合のテスト"""
     response = client.post(
-        "/answer",
-        json={"quiz_id": "sapporo", "answer": "さっぽろ", "correct_answer": "さっぽろ"}
+        "/",
+        data={"correct_answer": "さっぽろ", "answer": "さっぽろ"}
     )
     assert response.status_code == 200
-    assert response.json() == {"result": "correct", "correct_answer": None}
+    assert response.json() == {"result": "correct", "correct_answer": "さっぽろ"}
 
-def test_check_answer_incorrect():
+@pytest.mark.asyncio
+async def test_check_answer_incorrect():
     """不正解の場合のテスト"""
     response = client.post(
-        "/answer",
-        json={"quiz_id": "sapporo", "answer": "まちがい", "correct_answer": "さっぽろ"}
+        "/",
+        data={"correct_answer": "さっぽろ", "answer": "まちがい"}
     )
     assert response.status_code == 200
     assert response.json() == {"result": "incorrect", "correct_answer": "さっぽろ"}

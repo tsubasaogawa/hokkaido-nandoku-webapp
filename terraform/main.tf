@@ -48,6 +48,14 @@ resource "aws_iam_role" "lambda_exec" {
           ]
           Effect   = "Allow"
           Resource = "*"
+        },
+        {
+          Action   = [
+            "dynamodb:GetItem",
+            "dynamodb:PutItem"
+          ]
+          Effect   = "Allow"
+          Resource = aws_dynamodb_table.quiz_cache.arn
         }
       ]
     })
@@ -85,3 +93,24 @@ resource "aws_lambda_function_url" "this" {
   function_name      = aws_lambda_function.this.function_name
   authorization_type = "NONE"
 }
+
+resource "aws_dynamodb_table" "quiz_cache" {
+  name         = "hokkaido-nandoku-quiz-cache"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "cache_key"
+
+  attribute {
+    name = "cache_key"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = true
+  }
+
+  tags = {
+    Name = "HokkaidoNandokuQuizCache"
+  }
+}
+
