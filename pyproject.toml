@@ -9,6 +9,8 @@ dependencies = [
     "boto3",
     "httpx",
     "mangum",
+    "jinja2",
+    "python-multipart",
 ]
 
 [project.optional-dependencies]

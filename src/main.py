@@ -6,13 +6,46 @@ import random
 import os
 import httpx
 from mangum import Mangum
+import boto3
+import hashlib
+import time
+import logging
 
 from bedrock_client import BedrockClient, BedrockConnectionError
-import logging
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 bedrock_client = BedrockClient()
+
+# DynamoDB Cache Setup
+# AWS_REGION environment variable is usually available in Lambda
+dynamodb = boto3.resource('dynamodb', region_name=os.environ.get("AWS_REGION", "ap-northeast-1"))
+TABLE_NAME = os.environ.get("DYNAMODB_TABLE_NAME", "hokkaido-nandoku-quiz-cache")
+table = dynamodb.Table(TABLE_NAME)
+
+def get_cached_options(text: str) -> list[str] | None:
+    """DynamoDBからキャッシュされた選択肢を取得する"""
+    key = hashlib.sha256(text.encode('utf-8')).hexdigest()
+    try:
+        response = table.get_item(Key={'cache_key': key})
+        if 'Item' in response:
+            return response['Item']['options']
+    except Exception as e:
+        logging.error(f"DynamoDB get error: {e}")
+    return None
+
+def cache_options(text: str, options: list[str]):
+    """生成された選択肢をDynamoDBにキャッシュする（TTL: 1週間）"""
+    key = hashlib.sha256(text.encode('utf-8')).hexdigest()
+    expires_at = int(time.time()) + (7 * 24 * 60 * 60) # 1 week
+    try:
+        table.put_item(Item={
+            'cache_key': key,
+            'options': options,
+            'expires_at': expires_at
+        })
+    except Exception as e:
+        logging.error(f"DynamoDB put error: {e}")
 
 class QuizResponse(BaseModel):
     id: str
@@ -44,20 +77,26 @@ async def get_quiz_data(city_info: dict) -> dict:
     """都市情報からクイズデータを生成する"""
     correct_answer = city_info["yomi"] # 正解は「よみ」
     city_id = city_info.get("id")
+    city_name = city_info["name"]
 
-    try:
-        # Bedrockには「漢字」を渡して選択肢を生成させる
-        incorrect_options = bedrock_client.generate_options(city_info["name"])
-    except BedrockConnectionError as e:
-        logging.error(f"Bedrock connection error: {e}")
-        incorrect_options = ["ダミー1", "ダミー2", "ダミー3"]
+    cached_options = get_cached_options(city_name)
+    if cached_options:
+        incorrect_options = cached_options
+    else:
+        try:
+            # Bedrockには「漢字」を渡して選択肢を生成させる
+            incorrect_options = bedrock_client.generate_options(city_name)
+            cache_options(city_name, incorrect_options)
+        except BedrockConnectionError as e:
+            logging.error(f"Bedrock connection error: {e}")
+            incorrect_options = ["ダミー1", "ダミー2", "ダミー3"]
 
     options = [correct_answer] + incorrect_options
     random.shuffle(options) # 選択肢をシャッフル
 
     return {
         "id": city_id,
-        "name": city_info["name"], # 問題文は「漢字」
+        "name": city_name, # 問題文は「漢字」
         "options": options,
         "correct_answer": correct_answer,
     }
