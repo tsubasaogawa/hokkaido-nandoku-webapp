@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-11-07
 
 ## Active Technologies
+- Python 3.13 (Backend), HTML5/CSS3/ES6+ (Frontend) + FastAPI (Backend), None (Frontend) (004-modern-quiz-ui)
+- DynamoDB (Caching - existing) (004-modern-quiz-ui)
 
 - (001-hokkaido-nandoku-quiz)
 
@@ -22,9 +24,10 @@ tests/
 : Follow standard conventions
 
 ## Recent Changes
+- 004-modern-quiz-ui: Added Python 3.13 (Backend), HTML5/CSS3/ES6+ (Frontend) + FastAPI (Backend), None (Frontend)
+- 004-modern-quiz-ui: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 003-cache-bedrock-options: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
-- 001-hokkaido-nandoku-quiz: Added
 
 <!-- MANUAL ADDITIONS START -->
 ## デプロイ方法
