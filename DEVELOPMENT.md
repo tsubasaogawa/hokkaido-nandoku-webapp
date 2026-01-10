@@ -49,8 +49,9 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
 このアプリケーションは Terraform を使用してAWSにデプロイされます。
 
 1.  **Python の依存関係をインストールし、デプロイパッケージを作成します**:
-    `src` ディレクトリのコードと、必要な PythonVライブラリを `dist` ディレクトリにパッケージングします。Lambda の実行環境と互換性のあるバイナリをインストールするため、`--platform` オプションを使用します。
+    `src` ディレクトリのコードと、必要な Python ライブラリを `dist` ディレクトリにパッケージングします。Lambda の実行環境と互換性のあるバイナリをインストールするため、`--platform` オプションを使用します。
     ```bash
+    mkdir -p dist
     rm -rf dist/*
     pip install . jinja2 python-multipart -t dist --platform manylinux2014_x86_64 --python-version 3.13 --only-binary=:all:
     cp -r src/* dist/
