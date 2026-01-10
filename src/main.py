@@ -35,9 +35,9 @@ def get_cached_options(text: str) -> list[str] | None:
     return None
 
 def cache_options(text: str, options: list[str]):
-    """生成された選択肢をDynamoDBにキャッシュする（TTL: 1週間）"""
+    """生成された選択肢をDynamoDBにキャッシュする"""
     key = hashlib.sha256(text.encode('utf-8')).hexdigest()
-    expires_at = int(time.time()) + (7 * 24 * 60 * 60) # 1 week
+    expires_at = int(time.time()) + (7 * 4 * 24 * 60 * 60) # 4 weeks
     try:
         table.put_item(Item={
             'cache_key': key,
