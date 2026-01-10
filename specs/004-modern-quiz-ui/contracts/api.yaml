@@ -1,0 +1,48 @@
+openapi: 3.0.0
+info:
+  title: Hokkaido Nandoku Quiz API
+  version: 1.0.0
+paths:
+  /:
+    get:
+      summary: Get Quiz Page
+      description: Returns the HTML page with a new random quiz injected.
+      responses:
+        '200':
+          description: HTML Page
+          content:
+            text/html:
+              schema:
+                type: string
+    post:
+      summary: Submit Answer
+      description: Check the user's answer.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                quiz_id:
+                  type: string
+                correct_answer:
+                  type: string
+                answer:
+                  type: string
+              required:
+                - quiz_id
+                - correct_answer
+                - answer
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum: [correct, incorrect]
+                  correct_answer:
+                    type: string
