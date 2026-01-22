@@ -22,58 +22,66 @@
   <text x="400" y="30" class="title">Hokkaido Nandoku Webapp - System Architecture</text>
 
   <!-- User -->
-  <rect x="50" y="200" width="100" height="60" rx="5" class="box" />
-  <text x="100" y="235" class="text">User</text>
-  <text x="100" y="290" class="text">(Browser)</text>
+  <rect x="20" y="200" width="100" height="60" rx="5" class="box" />
+  <text x="70" y="235" class="text">User</text>
+  <text x="70" y="290" class="text">(Browser)</text>
 
   <!-- AWS Cloud Boundary -->
-  <rect x="200" y="60" width="400" height="400" rx="10" fill="none" stroke="#FF9900" stroke-width="2" stroke-dasharray="10,5" />
-  <text x="250" y="85" class="label" fill="#FF9900" font-weight="bold">AWS Cloud</text>
+  <rect x="140" y="60" width="480" height="400" rx="10" fill="none" stroke="#FF9900" stroke-width="2" stroke-dasharray="10,5" />
+  <text x="190" y="85" class="label" fill="#FF9900" font-weight="bold">AWS Cloud</text>
 
-  <!-- Lambda Function URL -->
-  <rect x="240" y="200" width="140" height="60" rx="5" class="aws-box" fill="#FFC870" />
-  <text x="310" y="225" class="text">Lambda</text>
-  <text x="310" y="245" class="text">Function URL</text>
+  <!-- CloudFront -->
+  <rect x="160" y="200" width="100" height="60" rx="5" class="aws-box" fill="#FFC870" />
+  <text x="210" y="235" class="text">CloudFront</text>
+
+  <!-- API Gateway -->
+  <rect x="300" y="200" width="100" height="60" rx="5" class="aws-box" fill="#D494FF" stroke="#8C4FFF" />
+  <text x="350" y="225" class="text">API Gateway</text>
+  <text x="350" y="245" class="text">(HTTP API)</text>
 
   <!-- Lambda Function (FastAPI) -->
-  <rect x="430" y="180" width="140" height="100" rx="5" class="aws-box" />
-  <text x="500" y="215" class="text">AWS Lambda</text>
-  <text x="500" y="235" class="text">(FastAPI / Python 3.13)</text>
-  <text x="500" y="255" class="text">hokkaido-nandoku-quiz</text>
+  <rect x="450" y="180" width="140" height="100" rx="5" class="aws-box" />
+  <text x="520" y="215" class="text">AWS Lambda</text>
+  <text x="520" y="235" class="text">(FastAPI / Python 3.13)</text>
+  <text x="520" y="255" class="text">hokkaido-nandoku-quiz</text>
 
   <!-- DynamoDB -->
-  <rect x="430" y="350" width="140" height="60" rx="5" class="aws-box" fill="#3D55CE" stroke="#25337A" />
-  <text x="500" y="380" class="text" fill="white" style="fill: white;">Amazon DynamoDB</text>
-  <text x="500" y="400" class="text" fill="#eee" style="fill: #eee; font-size: 10px;">(Cache Options)</text>
+  <rect x="450" y="350" width="140" height="60" rx="5" class="aws-box" fill="#3D55CE" stroke="#25337A" />
+  <text x="520" y="380" class="text" fill="white" style="fill: white;">Amazon DynamoDB</text>
+  <text x="520" y="400" class="text" fill="#eee" style="fill: #eee; font-size: 10px;">(Cache Options)</text>
 
   <!-- Bedrock -->
-  <rect x="430" y="80" width="140" height="60" rx="5" class="aws-box" fill="#2EBC9D" stroke="#1D7562" />
-  <text x="500" y="110" class="text" fill="white" style="fill: white;">Amazon Bedrock</text>
+  <rect x="450" y="80" width="140" height="60" rx="5" class="aws-box" fill="#2EBC9D" stroke="#1D7562" />
+  <text x="520" y="110" class="text" fill="white" style="fill: white;">Amazon Bedrock</text>
   
   <!-- External API -->
-  <rect x="650" y="200" width="120" height="60" rx="5" class="ext-box" />
-  <text x="710" y="225" class="text">External API</text>
-  <text x="710" y="245" class="text">(Quiz Data)</text>
+  <rect x="660" y="200" width="120" height="60" rx="5" class="ext-box" />
+  <text x="720" y="225" class="text">External API</text>
+  <text x="720" y="245" class="text">(Quiz Data)</text>
 
   <!-- Connections -->
   
-  <!-- User to Lambda URL -->
-  <line x1="150" y1="230" x2="230" y2="230" class="arrow" />
-  <text x="190" y="220" class="label" font-size="10px">HTTPS</text>
+  <!-- User to CloudFront -->
+  <line x1="120" y1="230" x2="150" y2="230" class="arrow" />
+  <text x="135" y="220" class="label" font-size="10px">HTTPS</text>
 
-  <!-- URL to Lambda -->
-  <line x1="380" y1="230" x2="420" y2="230" class="arrow" />
+  <!-- CloudFront to API Gateway -->
+  <line x1="260" y1="230" x2="290" y2="230" class="arrow" />
+  <text x="275" y="220" class="label" font-size="10px">HTTPS</text>
+
+  <!-- API Gateway to Lambda -->
+  <line x1="400" y1="230" x2="440" y2="230" class="arrow" />
 
   <!-- Lambda to Bedrock -->
-  <line x1="500" y1="180" x2="500" y2="150" class="arrow" />
-  <text x="510" y="170" class="label" font-size="10px">Gen AI (Cache miss)</text>
+  <line x1="520" y1="180" x2="520" y2="150" class="arrow" />
+  <text x="530" y="170" class="label" font-size="10px">Gen AI (Cache miss)</text>
 
   <!-- Lambda to DynamoDB -->
-  <line x1="500" y1="280" x2="500" y2="340" class="arrow" />
-  <text x="510" y="320" class="label" font-size="10px">Get/Put Cache</text>
+  <line x1="520" y1="280" x2="520" y2="340" class="arrow" />
+  <text x="530" y="320" class="label" font-size="10px">Get/Put Cache</text>
 
   <!-- Lambda to External API -->
-  <line x1="570" y1="230" x2="640" y2="230" class="arrow" />
-  <text x="605" y="220" class="label" font-size="10px">Fetch City</text>
+  <line x1="590" y1="230" x2="650" y2="230" class="arrow" />
+  <text x="625" y="220" class="label" font-size="10px">Fetch City</text>
 
 </svg>
