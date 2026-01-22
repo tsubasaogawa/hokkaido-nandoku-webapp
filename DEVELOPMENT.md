@@ -74,13 +74,13 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
     terraform plan -var "api_endpoint=<YOUR_API_ENDPOINT>"
     ```
 
-5.  **リソースを適用（デプロイ）します**:
+5.  **リソースを適用（デプロイ）します:**
     ```bash
     terraform apply -var "api_endpoint=<YOUR_API_ENDPOINT>" -auto-approve
     ```
 
-デプロイが完了すると、`lambda_function_url`という名前の出力が表示されます。これがクイズアプリケーションの URL です。
+デプロイが完了すると、`cloudfront_url`という名前の出力が表示されます。これがクイズアプリケーションの URL です。
 
 ## 実行
 
-Terraform のデプロイ出力で得られた URL に Web ブラウザでアクセスすると、クイズをプレイできます。
+Terraform のデプロイ出力で得られた CloudFront URL に Web ブラウザでアクセスすると、クイズをプレイできます。

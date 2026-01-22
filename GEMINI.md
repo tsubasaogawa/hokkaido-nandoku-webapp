@@ -58,18 +58,20 @@ tests/
     ```bash
     terraform apply -var "api_endpoint=<YOUR_API_ENDPOINT>" -auto-approve
     ```
-    デプロイが完了すると、`lambda_function_url`という名前の出力が表示されます。これがクイズアプリケーションのURLです。
+    デプロイが完了すると、`cloudfront_url`という名前の出力が表示されます。これがクイズアプリケーションのURLです。
 
 ## 動作確認方法
 
 デプロイ後、アプリケーションが正しく動作しているかを確認します。
 
 1.  **`curl` を利用したサイトアクセス確認:**
-    デプロイ出力で得られた `lambda_function_url` （例: `https://hcflplibhd3ea3ktlsxwfaenke0kwrmq.lambda-url.ap-northeast-1.on.aws/`）に対して `curl` コマンドで HTTP GET リクエストを実行します。
+    デプロイ出力で得られた `cloudfront_url` （例: `d2m20hq82lg8zn.cloudfront.net`）に対して `curl` コマンドで HTTP GET リクエストを実行します。
     ```bash
-    curl -X GET https://hcflplibhd3ea3ktlsxwfaenke0kwrmq.lambda-url.ap-northeast-1.on.aws/
+    curl -v https://<YOUR_CLOUDFRONT_URL>/
     ```
     正常に動作していれば、HTMLコンテンツが返され、その中に `quizData` を含むJavaScriptの定義（例: `const quizData = {"correct_answer": "そうべつ", ...};`）が含まれているはずです。
+    
+    なお、セキュリティ設定により、CloudFrontを経由しない直接アクセス（API Gatewayへのアクセスなど）は `403 Forbidden` となります。
 
 2.  **エラー発生時の CloudWatch Logs 参照:**
     `curl` の結果が `Internal Server Error` などであった場合、AWS CloudWatch Logs を参照して詳細なエラー原因を特定します。
