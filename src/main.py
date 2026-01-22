@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, Form
+from fastapi import FastAPI, HTTPException, Request, Form, Depends, Header
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -13,7 +13,13 @@ import logging
 
 from bedrock_client import BedrockClient, BedrockConnectionError
 
-app = FastAPI()
+async def verify_cloudfront_secret(x_cf_secret: str | None = Header(default=None)):
+    """CloudFrontからのリクエストであることを検証する"""
+    expected_secret = os.environ.get("CF_HEADER_SECRET")
+    if expected_secret and x_cf_secret != expected_secret:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid CloudFront Secret")
+
+app = FastAPI(dependencies=[Depends(verify_cloudfront_secret)])
 templates = Jinja2Templates(directory="templates")
 bedrock_client = BedrockClient()
 

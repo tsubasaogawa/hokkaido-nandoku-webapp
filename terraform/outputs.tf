@@ -1,4 +1,4 @@
-output "lambda_function_url" {
-  description = "The URL of the Lambda Function URL."
-  value       = aws_lambda_function_url.this.function_url
+output "cloudfront_url" {
+  description = "The URL of the CloudFront Distribution."
+  value       = aws_cloudfront_distribution.cf_dist.domain_name
 }
