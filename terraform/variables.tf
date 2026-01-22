@@ -6,7 +6,7 @@ variable "aws_region" {
   default     = "ap-northeast-1"
 
   validation {
-    condition     = can(regex("^[a-z]{2}-[a-z]+-[0-9]{1}$", var.aws_region))
+    condition     = can(regex("^[a-z]{2}-[a-z]+-[0-9]+$", var.aws_region))
     error_message = "AWS region must be in the format: xx-xxxx-x (e.g., ap-northeast-1)."
   }
 }
@@ -28,7 +28,7 @@ variable "api_endpoint" {
   sensitive   = true
 
   validation {
-    condition     = can(regex("^[a-z0-9.-]+\\.(execute-api|amazonaws\\.com)", var.api_endpoint))
-    error_message = "API endpoint must be a valid AWS API Gateway or AWS service endpoint."
+    condition     = can(regex("^[a-zA-Z0-9.-]+\\.(execute-api|amazonaws\\.com|cloudfront\\.net)", var.api_endpoint))
+    error_message = "API endpoint must be a valid AWS API Gateway, CloudFront, or AWS service endpoint."
   }
 }

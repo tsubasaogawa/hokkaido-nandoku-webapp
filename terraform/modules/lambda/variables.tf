@@ -5,8 +5,8 @@ variable "function_name" {
   type        = string
 
   validation {
-    condition     = length(var.function_name) > 0 && length(var.function_name) <= 64
-    error_message = "Function name must be between 1 and 64 characters."
+    condition     = can(regex("^[a-zA-Z0-9-_]+$", var.function_name)) && length(var.function_name) > 0 && length(var.function_name) <= 64
+    error_message = "Function name must be 1-64 characters and contain only letters, numbers, hyphens, and underscores."
   }
 }
 
