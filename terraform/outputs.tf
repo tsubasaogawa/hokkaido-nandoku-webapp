@@ -17,7 +17,7 @@ output "api_gateway_endpoint" {
 
 output "lambda_function_name" {
   description = "The name of the Lambda function"
-  value       = module.lambda.function_name
+  value       = module.lambda.lambda_function_name
 }
 
 output "dynamodb_table_name" {

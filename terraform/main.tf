@@ -46,7 +46,7 @@ module "lambda" {
   # Install Python dependencies during build
   build_in_docker = true
   docker_image    = "public.ecr.aws/sam/build-python3.13:latest"
-  
+
   artifacts_dir = "${path.module}/../.terraform-lambda-builds"
 
   environment_variables = {
