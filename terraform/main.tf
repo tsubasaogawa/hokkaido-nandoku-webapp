@@ -21,6 +21,10 @@ module "dynamodb" {
 }
 
 # Lambda Function for quiz application
+import {
+  to = module.lambda.aws_cloudwatch_log_group.lambda[0]
+  id = "/aws/lambda/hokkaido-nandoku-quiz"
+}
 module "lambda" {
   source  = "terraform-aws-modules/lambda/aws"
   version = "~> 7.0"
