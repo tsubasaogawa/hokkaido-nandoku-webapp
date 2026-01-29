@@ -3,8 +3,11 @@
 Auto-generated from all feature plans. Last updated: 2025-11-07
 
 ## Active Technologies
-- Python 3.13 (Backend), HTML5/CSS3/ES6+ (Frontend) + FastAPI (Backend), None (Frontend) (004-modern-quiz-ui)
-- DynamoDB (Caching - existing) (004-modern-quiz-ui)
+- Python 3.13 (Backend), HTML5/CSS3/ES6+ (Frontend) + FastAPI (Backend)
+- DynamoDB (Caching)
+- CloudFront (CDN)
+- API Gateway (HTTP API)
+- Terraform (IaC with Modules)
 
 - (001-hokkaido-nandoku-quiz)
 
@@ -13,6 +16,11 @@ Auto-generated from all feature plans. Last updated: 2025-11-07
 ```text
 src/
 tests/
+terraform/
+  modules/
+    api_gateway/
+    cloudfront/
+    dynamodb/
 ```
 
 ## Commands
@@ -24,37 +32,30 @@ tests/
 : Follow standard conventions
 
 ## Recent Changes
-- 004-modern-quiz-ui: Added Python 3.13 (Backend), HTML5/CSS3/ES6+ (Frontend) + FastAPI (Backend), None (Frontend)
-- 004-modern-quiz-ui: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 003-cache-bedrock-options: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+- Refactored infrastructure to use Terraform modules
+- Implemented CloudFront -> API Gateway -> Lambda architecture
+- Added X-CF-Secret header verification for security
+- 004-modern-quiz-ui: Added Python 3.13 (Backend), HTML5/CSS3/ES6+ (Frontend) + FastAPI (Backend)
 
 
 <!-- MANUAL ADDITIONS START -->
 ## デプロイ方法
 
-このWebアプリケーションをAWS Lambdaにデプロイする手順は以下の通りです。
+このWebアプリケーションをAWSにデプロイする手順は以下の通りです。
+TerraformモジュールがPythonの依存関係インストールとパッケージングを自動的に行います（Dockerが必要です）。
 
-1.  **Pythonの依存関係をインストールし、デプロイパッケージを作成します:**
-    `src` ディレクトリのコードと、必要なPythonライブラリ (`jinja2`, `python-multipart`) を `dist` ディレクトリにパッケージングします。Lambda の実行環境と互換性のあるバイナリをインストールするため、`--platform` オプションを使用します。
-    ```bash
-    rm -rf dist/*
-    pip install . jinja2 python-multipart -t dist --platform manylinux2014_x86_64 --python-version 3.13 --only-binary=:all:
-    cp -r src/* dist/
-    cp -r templates dist/
-    ```
-
-2.  **Terraformの作業ディレクトリに移動します:**
+1.  **Terraformの作業ディレクトリに移動します:**
     ```bash
     cd terraform
     ```
 
-3.  **Terraformを初期化します:**
+2.  **Terraformを初期化します:**
     ```bash
     terraform init
     ```
 
-4.  **リソースを適用（デプロイ）します:**
-    `api_endpoint` 変数には、`hokkaido-nandoku-api` のデプロイ済みエンドポイントURL（例: `https://ecif1srlak.execute-api.ap-northeast-1.amazonaws.com`）を指定します。
+3.  **リソースを適用（デプロイ）します:**
+    `api_endpoint` 変数には、`hokkaido-nandoku-api` のデプロイ済みエンドポイントURL（例: `ecif1srlak.execute-api.ap-northeast-1.amazonaws.com`）を指定します。
     ```bash
     terraform apply -var "api_endpoint=<YOUR_API_ENDPOINT>" -auto-approve
     ```

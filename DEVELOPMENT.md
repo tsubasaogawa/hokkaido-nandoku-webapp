@@ -46,7 +46,8 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
 
 ## デプロイ手順
 
-このアプリケーションは Terraform を使用してAWSにデプロイされます。terraform-aws-modules/lambda を使用しているため、ビルドとデプロイが自動化されています。
+このアプリケーションは Terraform を使用してAWSにデプロイされます。
+TerraformモジュールがPythonの依存関係インストールとパッケージングを自動的に行います（Dockerが必要です）。
 
 1.  **Terraform の作業ディレクトリに移動します**:
     ```bash
@@ -71,13 +72,7 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
 
 デプロイが完了すると、`cloudfront_url`という名前の出力が表示されます。これがクイズアプリケーションの URL です。
 
-**注意**: Terraform が自動的に以下を行います:
-- Python 依存関係のインストール（Docker コンテナ内で実行）
-- Lambda デプロイパッケージの作成
-- Lambda 関数のデプロイ
-
-ローカル環境を汚さず、ワンステップでデプロイが完了します。
-
 ## 実行
 
-Terraform のデプロイ出力で得られた CloudFront URL に Web ブラウザでアクセスすると、クイズをプレイできます。
+Terraform のデプロイ出力で得られた URL に Web ブラウザでアクセスすると、クイズをプレイできます。
+セキュリティ設定により、CloudFrontを経由しない直接アクセスは制限されています。
