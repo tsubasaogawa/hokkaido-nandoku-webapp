@@ -213,4 +213,7 @@ __marimo__/
 *.tfvars
 .terraform.lock.hcl
 
+# Terraform AWS Lambda module build artifacts
+.terraform-lambda-builds/
+
 main.zip
