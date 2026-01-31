@@ -47,34 +47,25 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
 ## デプロイ手順
 
 このアプリケーションは Terraform を使用してAWSにデプロイされます。
+TerraformモジュールがPythonの依存関係インストールとパッケージングを自動的に行います（Dockerが必要です）。
 
-1.  **Python の依存関係をインストールし、デプロイパッケージを作成します**:
-    `src` ディレクトリのコードと、必要な Python ライブラリを `dist` ディレクトリにパッケージングします。Lambda の実行環境と互換性のあるバイナリをインストールするため、`--platform` オプションを使用します。
-    ```bash
-    mkdir -p dist
-    rm -rf dist/*
-    pip install . jinja2 python-multipart -t dist --platform manylinux2014_x86_64 --python-version 3.13 --only-binary=:all:
-    cp -r src/* dist/
-    cp -r templates dist/
-    ```
-
-2.  **Terraform の作業ディレクトリに移動します**:
+1.  **Terraform の作業ディレクトリに移動します**:
     ```bash
     cd terraform
     ```
 
-3.  **Terraform を初期化します**:
+2.  **Terraform を初期化します**:
     ```bash
     terraform init
     ```
 
-4.  **デプロイ計画を確認します**:
+3.  **デプロイ計画を確認します**:
     `api_endpoint` 変数には、`hokkaido-nandoku-api` のデプロイ済みエンドポイント URL（例: `ecif1srlak.execute-api.ap-northeast-1.amazonaws.com`）を指定します。末尾の `/random` は含めないでください。
     ```bash
     terraform plan -var "api_endpoint=<YOUR_API_ENDPOINT>"
     ```
 
-5.  **リソースを適用（デプロイ）します:**
+4.  **リソースを適用（デプロイ）します**:
     ```bash
     terraform apply -var "api_endpoint=<YOUR_API_ENDPOINT>" -auto-approve
     ```
@@ -83,4 +74,5 @@ AWS Lambda 関数で問題が発生した場合、CloudWatch Logs を確認す�
 
 ## 実行
 
-Terraform のデプロイ出力で得られた CloudFront URL に Web ブラウザでアクセスすると、クイズをプレイできます。
+Terraform のデプロイ出力で得られた URL に Web ブラウザでアクセスすると、クイズをプレイできます。
+セキュリティ設定により、CloudFrontを経由しない直接アクセスは制限されています。
