@@ -16,8 +16,6 @@ class BedrockClient:
     """
     A client for interacting with the Amazon Bedrock API.
     """
-    MODEL_ID = "apac.anthropic.claude-3-haiku-20240307-v1:0"
-
     def __init__(self):
         """
         Initializes the Bedrock client.
@@ -69,7 +67,7 @@ class BedrockClient:
             ]
 
             response = self.client.converse(
-                modelId=self.MODEL_ID,
+                modelId=os.environ["BEDROCK_MODEL_ID"],
                 messages=messages,
                 inferenceConfig={
                     "maxTokens": 1000,

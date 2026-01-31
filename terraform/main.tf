@@ -45,6 +45,7 @@ module "lambda" {
     NANDOKU_API_ENDPOINT = "https://${var.api_endpoint}"
     CF_HEADER_SECRET     = random_password.cf_secret.result
     DYNAMODB_TABLE_NAME  = module.dynamodb.table_name
+    BEDROCK_MODEL_ID     = local.bedrock_model_id
   }
 
   # IAM role configuration

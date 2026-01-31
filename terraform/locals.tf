@@ -27,4 +27,7 @@ locals {
 
   # CloudFront configuration
   cloudfront_comment = "Hokkaido Nandoku Quiz CloudFront Distribution"
+
+  # Bedrock configuration
+  bedrock_model_id = "jp.anthropic.claude-haiku-4-5-20251001-v1:0"
 }
