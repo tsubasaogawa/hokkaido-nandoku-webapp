@@ -34,22 +34,10 @@ module "lambda" {
   runtime       = local.lambda_runtime
   timeout       = local.lambda_timeout
 
-  source_path = [
-    {
-      path = "${path.module}/../src"
-      patterns = [
-        "!__pycache__/.*",
-        "!\\..*"
-      ]
-    },
-    {
-      path = "${path.module}/../templates"
-    }
-  ]
+  source_path = "${path.module}/../src"
 
   # Install Python dependencies during build
   build_in_docker = true
-  docker_image    = "public.ecr.aws/sam/build-python3.13:latest"
 
   artifacts_dir = "${path.module}/../.terraform-lambda-builds"
 
