@@ -44,3 +44,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "domain_name" {
+  description = "Custom domain name for CloudFront distribution (alternate domain name)"
+  type        = string
+  default     = ""
+}
+
+variable "certificate_arn" {
+  description = "ARN of the ACM certificate to use for custom domain (must be in us-east-1)"
+  type        = string
+  default     = ""
+}

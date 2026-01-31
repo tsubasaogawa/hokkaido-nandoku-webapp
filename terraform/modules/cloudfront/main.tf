@@ -23,6 +23,9 @@ resource "aws_cloudfront_distribution" "this" {
   is_ipv6_enabled = true
   comment         = var.comment
 
+  # Add custom domain name (alternate domain name) if provided
+  aliases = var.domain_name != "" ? [var.domain_name] : []
+
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
@@ -41,7 +44,11 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    # Use custom certificate if domain name is provided, otherwise use default CloudFront certificate
+    cloudfront_default_certificate = var.domain_name == "" ? true : false
+    acm_certificate_arn            = var.domain_name != "" ? var.certificate_arn : null
+    ssl_support_method             = var.domain_name != "" ? "sni-only" : null
+    minimum_protocol_version       = var.domain_name != "" ? "TLSv1.2_2021" : null
   }
 
   lifecycle {

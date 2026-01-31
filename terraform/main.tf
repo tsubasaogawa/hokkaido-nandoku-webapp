@@ -7,6 +7,26 @@ resource "random_password" "cf_secret" {
   special = false
 }
 
+# ACM Certificate for CloudFront (must be in us-east-1)
+resource "aws_acm_certificate" "cloudfront" {
+  count = var.cloudfront_domain_name != "" ? 1 : 0
+
+  provider          = aws.us_east_1
+  domain_name       = var.acm_certificate_domain
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "cloudfront-certificate"
+    }
+  )
+}
+
 # DynamoDB Table for quiz caching
 module "dynamodb" {
   source = "./modules/dynamodb"
@@ -100,6 +120,10 @@ module "cloudfront" {
 
   custom_header_name  = "X-CF-Secret"
   custom_header_value = random_password.cf_secret.result
+
+  # Custom domain configuration
+  domain_name     = var.cloudfront_domain_name
+  certificate_arn = var.cloudfront_domain_name != "" ? aws_acm_certificate.cloudfront[0].arn : ""
 
   tags = local.common_tags
 }
