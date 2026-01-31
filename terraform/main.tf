@@ -9,10 +9,10 @@ resource "random_password" "cf_secret" {
 
 # ACM Certificate for CloudFront (must be in us-east-1)
 resource "aws_acm_certificate" "cloudfront" {
-  count = var.cloudfront_domain_name != "" ? 1 : 0
+  count = var.domain_name != "" ? 1 : 0
 
   provider          = aws.us_east_1
-  domain_name       = var.acm_certificate_domain
+  domain_name       = var.domain_name
   validation_method = "DNS"
 
   lifecycle {
@@ -122,8 +122,8 @@ module "cloudfront" {
   custom_header_value = random_password.cf_secret.result
 
   # Custom domain configuration
-  domain_name     = var.cloudfront_domain_name
-  certificate_arn = var.cloudfront_domain_name != "" ? aws_acm_certificate.cloudfront[0].arn : ""
+  domain_name     = var.domain_name
+  certificate_arn = var.domain_name != "" ? aws_acm_certificate.cloudfront[0].arn : ""
 
   tags = local.common_tags
 }

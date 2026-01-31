@@ -91,28 +91,25 @@ Access the application at: `https://d1234567890abc.cloudfront.net`
 | `aws_region` | AWS region to deploy resources | `ap-northeast-1` | No |
 | `lambda_function_name` | Name of the Lambda function | `hokkaido-nandoku-quiz` | No |
 | `api_endpoint` | Backend API endpoint (domain only) | - | Yes |
-| `cloudfront_domain_name` | Custom domain name for CloudFront | `""` (empty) | No |
-| `acm_certificate_domain` | Domain for ACM certificate (required if custom domain is set) | `""` (empty) | No |
+| `domain_name` | Custom domain name for CloudFront and ACM certificate (supports wildcards) | `""` (empty) | No |
 
 ### Custom Domain Configuration
 
 To use a custom domain name instead of the default CloudFront domain:
 
-1. Specify both `cloudfront_domain_name` and `acm_certificate_domain`:
+1. Specify the `domain_name` variable:
 
 ```bash
 terraform apply \
   -var "api_endpoint=YOUR_API_ENDPOINT" \
-  -var "cloudfront_domain_name=example.com" \
-  -var "acm_certificate_domain=example.com"
+  -var "domain_name=example.com"
 ```
 
-For a wildcard certificate, use:
+For a wildcard certificate that can be used with any subdomain:
 ```bash
 terraform apply \
   -var "api_endpoint=YOUR_API_ENDPOINT" \
-  -var "cloudfront_domain_name=www.example.com" \
-  -var "acm_certificate_domain=*.example.com"
+  -var "domain_name=*.example.com"
 ```
 
 2. After applying, Terraform will output DNS validation records:

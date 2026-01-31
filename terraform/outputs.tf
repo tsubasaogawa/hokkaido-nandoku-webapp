@@ -27,7 +27,7 @@ output "dynamodb_table_name" {
 
 output "acm_certificate_validation_records" {
   description = "DNS validation records for ACM certificate (if custom domain is configured)"
-  value = var.cloudfront_domain_name != "" ? [
+  value = var.domain_name != "" ? [
     for dvo in aws_acm_certificate.cloudfront[0].domain_validation_options : {
       name   = dvo.resource_record_name
       type   = dvo.resource_record_type
@@ -39,5 +39,5 @@ output "acm_certificate_validation_records" {
 
 output "custom_domain_name" {
   description = "Custom domain name configured for CloudFront (if any)"
-  value       = var.cloudfront_domain_name
+  value       = var.domain_name
 }
