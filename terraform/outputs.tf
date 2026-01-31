@@ -24,3 +24,20 @@ output "dynamodb_table_name" {
   description = "The name of the DynamoDB cache table"
   value       = module.dynamodb.table_name
 }
+
+output "acm_certificate_validation_records" {
+  description = "DNS validation records for ACM certificate (if custom domain is configured)"
+  value = var.domain_name != "" ? [
+    for dvo in aws_acm_certificate.cloudfront[0].domain_validation_options : {
+      name   = dvo.resource_record_name
+      type   = dvo.resource_record_type
+      value  = dvo.resource_record_value
+      domain = dvo.domain_name
+    }
+  ] : []
+}
+
+output "custom_domain_name" {
+  description = "Custom domain name configured for CloudFront (if any)"
+  value       = var.domain_name
+}

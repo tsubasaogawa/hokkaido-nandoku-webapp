@@ -91,6 +91,48 @@ Access the application at: `https://d1234567890abc.cloudfront.net`
 | `aws_region` | AWS region to deploy resources | `ap-northeast-1` | No |
 | `lambda_function_name` | Name of the Lambda function | `hokkaido-nandoku-quiz` | No |
 | `api_endpoint` | Backend API endpoint (domain only) | - | Yes |
+| `domain_name` | Custom domain name for CloudFront and ACM certificate (supports wildcards) | `""` (empty) | No |
+
+### Custom Domain Configuration
+
+To use a custom domain name instead of the default CloudFront domain:
+
+1. Specify the `domain_name` variable:
+
+```bash
+terraform apply \
+  -var "api_endpoint=YOUR_API_ENDPOINT" \
+  -var "domain_name=example.com"
+```
+
+For a wildcard certificate that can be used with any subdomain:
+```bash
+terraform apply \
+  -var "api_endpoint=YOUR_API_ENDPOINT" \
+  -var "domain_name=*.example.com"
+```
+
+2. After applying, Terraform will output DNS validation records:
+
+```
+acm_certificate_validation_records = [
+  {
+    "domain" = "example.com"
+    "name"   = "_xxx.example.com"
+    "type"   = "CNAME"
+    "value"  = "_yyy.acm-validations.aws."
+  }
+]
+```
+
+3. Add these DNS records to your domain's DNS configuration to validate the certificate.
+
+4. Once validated, add a CNAME or ALIAS record pointing your domain to the CloudFront distribution:
+   - Type: CNAME (or ALIAS for Route53)
+   - Name: Your domain (e.g., `www.example.com` or `example.com`)
+   - Value: CloudFront domain name (from `cloudfront_url` output)
+
+**Note**: The ACM certificate is automatically created in us-east-1 region as required by CloudFront.
 
 ## Outputs
 
@@ -101,6 +143,8 @@ Access the application at: `https://d1234567890abc.cloudfront.net`
 | `api_gateway_endpoint` | API Gateway endpoint URL |
 | `lambda_function_name` | Lambda function name |
 | `dynamodb_table_name` | DynamoDB cache table name |
+| `acm_certificate_validation_records` | DNS validation records for ACM certificate (if custom domain is configured) |
+| `custom_domain_name` | Custom domain name configured for CloudFront (if any) |
 
 ## Remote State Backend (Recommended for Production)
 

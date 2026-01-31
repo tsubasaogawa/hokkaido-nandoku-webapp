@@ -32,3 +32,14 @@ variable "api_endpoint" {
     error_message = "API endpoint must be a valid AWS API Gateway, CloudFront, or AWS service endpoint."
   }
 }
+
+variable "domain_name" {
+  description = "Custom domain name for CloudFront and ACM certificate (e.g., example.com or *.example.com for wildcard). Leave empty to use default CloudFront domain."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.domain_name == "" || can(regex("^(\\*\\.)?[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$", var.domain_name))
+    error_message = "Domain name must be a valid domain or wildcard domain format."
+  }
+}
