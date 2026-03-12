@@ -127,3 +127,127 @@ module "cloudfront" {
 
   tags = local.common_tags
 }
+
+# --- Step Functions Cache Generation Flow ---
+
+# EventBridge Connection for HTTP Invoke
+resource "aws_cloudwatch_event_connection" "nandoku_api" {
+  name               = "${local.api_gateway_name}-connection"
+  description        = "Connection for Nandoku API HTTP Invoke"
+  authorization_type = "API_KEY"
+
+  auth_parameters {
+    api_key {
+      key   = "x-api-key"
+      value = "dummy-value"
+    }
+  }
+}
+
+# IAM Role for Step Functions Execution
+resource "aws_iam_role" "sfn_execution_role" {
+  name = "${local.api_gateway_name}-sfn-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "states.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# Policy allowing HTTP Invoke and Connection credentials retrieval
+resource "aws_iam_policy" "sfn_http_invoke_policy" {
+  name = "${local.api_gateway_name}-sfn-http-invoke"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "states:InvokeHTTPEndpoint"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "events:RetrieveConnectionCredentials"
+        ]
+        Resource = aws_cloudwatch_event_connection.nandoku_api.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = aws_cloudwatch_event_connection.nandoku_api.secret_arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "sfn_http_invoke_attach" {
+  role       = aws_iam_role.sfn_execution_role.name
+  policy_arn = aws_iam_policy.sfn_http_invoke_policy.arn
+}
+
+# Step Functions State Machine
+resource "aws_sfn_state_machine" "cache_generation_flow" {
+  name     = "${local.api_gateway_name}-cache-generation"
+  role_arn = aws_iam_role.sfn_execution_role.arn
+
+  definition = jsonencode({
+    Comment = "Cache Generation Flow for Hokkaido Nandoku Webapp"
+    StartAt = "ListItems"
+    States = {
+      ListItems = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::http:invoke"
+        Parameters = {
+          "ApiEndpoint" = "https://${var.api_endpoint}/v1/list"
+          "Method"      = "GET"
+          "Authentication" = {
+            "ConnectionArn" = aws_cloudwatch_event_connection.nandoku_api.arn
+          }
+        }
+        Next       = "ProcessItems"
+        ResultPath = "$.ListResult"
+      }
+      ProcessItems = {
+        Type           = "Map"
+        ItemsPath      = "$.ListResult.ResponseBody"
+        MaxConcurrency = 5
+        ItemProcessor = {
+          ProcessorConfig = {
+            Mode = "INLINE"
+          }
+          StartAt = "GenerateCache"
+          States = {
+            GenerateCache = {
+              Type     = "Task"
+              Resource = "arn:aws:states:::http:invoke"
+              Parameters = {
+                "ApiEndpoint.$" = "States.Format('https://${var.api_endpoint}/v1/id/{}', $.id)"
+                "Method"        = "GET"
+                "Authentication" = {
+                  "ConnectionArn" = aws_cloudwatch_event_connection.nandoku_api.arn
+                }
+              }
+              End = true
+            }
+          }
+        }
+        End = true
+      }
+    }
+  })
+
+  tags = local.common_tags
+}
